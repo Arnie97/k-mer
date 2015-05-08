@@ -1,18 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #define k 5
 
 typedef struct occurrence {
-    int sequence: 20;
-    int position: 7;
+    unsigned int sequence: 20;
+    unsigned int position: 7;
     struct occurrence *next;
 } new_t;
 
 new_t memory[1000000 * (101 - k)];
 new_t *cursor = memory;
 new_t *types[1 << (2 * k)] = {NULL};
+
 
 void
 elapsed_time(void)
@@ -22,10 +24,12 @@ elapsed_time(void)
         interval = clock();
     } else {
         interval = clock() - interval;
-        printf("Well done in %.3f seconds.\n", (double)interval / CLOCKS_PER_SEC);
+        printf("Well done in %.3f seconds.\n\n",
+            (double)interval / CLOCKS_PER_SEC);
         interval = 0;
     }
 }
+
 
 void
 throw(int error_code, char *message)
@@ -33,8 +37,11 @@ throw(int error_code, char *message)
     if (message != NULL) {
         fprintf(stderr, "ERROR: %s\n", message);
     }
-    exit(error_code);
+    if (error_code) {
+        exit(error_code);
+    }
 }
+
 
 int
 load_input(FILE *fp)
@@ -70,6 +77,59 @@ load_input(FILE *fp)
     return sequence - 1;
 }
 
+
+int
+get_line(void)
+{
+    char c, buffer[k + 2];  // newline and null character
+    int k_mer_type = 0;
+    static int input_count;
+
+    input_count++;
+    for (;;) {
+        printf("In [%d]: ", input_count);
+        fflush(stdout);
+        if (fgets(buffer, k + 2, stdin) == NULL) {
+        } else if (strlen(buffer) < k + 1) {
+            throw(0, "Text too short.");
+        } else if (buffer[k] != '\n') {
+            throw(0, "Text too long.");
+            while ((c = getchar()) != '\n' && c != EOF);  // flushes to line end
+        } else {
+            for (int i = 0; i < k; i++) {
+                k_mer_type >>= 2;
+                switch (buffer[i]) {
+                case 'A': /* k_mer_type ||= 0 << (2 * k - 2); */ break;
+                case 'C': k_mer_type |= 1 << (2 * k - 2); break;
+                case 'G': k_mer_type |= 2 << (2 * k - 2); break;
+                case 'T': k_mer_type |= 3 << (2 * k - 2); break;
+                default:
+                    throw(0, "Unexpected character.");
+                    goto skip;
+                }
+            }
+            return k_mer_type;
+            skip: ;
+        }
+    }
+}
+
+
+int
+query(int k_mer_type)
+{
+    int k_mer_count = 0;
+    new_t *result = types[k_mer_type];
+    do {
+        printf("Sequence %6u + %02u\n",
+            result->sequence, result->position);
+        result = result->next;
+        k_mer_count++;
+    } while (result != NULL);
+    return k_mer_count;
+}
+
+
 int
 main(int argc, char const *argv[])
 {
@@ -93,6 +153,12 @@ main(int argc, char const *argv[])
         elapsed_time();
 
         fclose(fp);
+        for (;;) {
+            int k_mer_type = get_line();
+            elapsed_time();
+            printf("%d results found.\n", query(k_mer_type));
+            elapsed_time();
+        }
     }
     return 0;
 }
