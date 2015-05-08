@@ -47,7 +47,7 @@ int
 load_input(FILE *fp)
 {
     int sequence = 0, position, k_mer_type;
-    for (char c = '\n'; c != EOF; c = fgetc(fp)) {
+    for (int c = '\n'; c != EOF; c = fgetc(fp)) {
         if (c == '\n') {
             while ((c = fgetc(fp)) != EOF && c != '\n');
             sequence++;
@@ -81,8 +81,8 @@ load_input(FILE *fp)
 int
 get_line(void)
 {
-    char c, buffer[k + 2];  // newline and null character
-    int k_mer_type = 0;
+    char buffer[k + 2];  // newline and null character
+    int k_mer_type = 0, c;
     static int input_count;
 
     input_count++;
