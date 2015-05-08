@@ -10,8 +10,9 @@ typedef struct occurrence {
     struct occurrence *next;
 } new_t;
 
-new_t memory[1000000 * k];
-new_t *types[1 << (2 * k)];
+new_t memory[1000000 * (101 - k)];
+new_t *cursor = memory;
+new_t *types[1 << (2 * k)] = {NULL};
 
 void
 elapsed_time(void)
@@ -43,9 +44,8 @@ load_input(FILE *fp)
         if (c == '\n') {
             while ((c = fgetc(fp)) != EOF && c != '\n');
             sequence++;
-            position = -5;
+            position = -k;
             k_mer_type = 0;
-            puts("========");
             continue;
         }
 
@@ -62,9 +62,12 @@ load_input(FILE *fp)
         if (++position < 0) {
             continue;
         }
-        printf("%d\n", k_mer_type);
+        cursor->sequence = sequence;
+        cursor->position = position;
+        cursor->next = types[k_mer_type];
+        types[k_mer_type] = cursor++;
     }
-    return 0;
+    return sequence - 1;
 }
 
 int
@@ -81,9 +84,12 @@ main(int argc, char const *argv[])
             throw(2, "Unable to open specified file.");
         }
 
-        printf("Start loading %s...\n", argv[i]);
+        printf("Loading %s into memory...\n", argv[i]);
         elapsed_time();
-        load_input(fp);
+        printf("%d sequences loaded into memory.\n", load_input(fp));
+        int k_mer_count = cursor - memory;
+        printf("%d %d-mers is stored in %d megabytes.\n",
+            k_mer_count, k, k_mer_count * sizeof(new_t) / 1048576);
         elapsed_time();
 
         fclose(fp);
