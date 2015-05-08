@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 #define k 5
@@ -23,6 +24,15 @@ elapsed_time(void)
         printf("Well done in %.3f seconds.\n", (double)interval / CLOCKS_PER_SEC);
         interval = 0;
     }
+}
+
+void
+throw(int error_code, char *message)
+{
+    if (message != NULL) {
+        fprintf(stderr, "ERROR: %s\n", message);
+    }
+    exit(error_code);
 }
 
 int
