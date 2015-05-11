@@ -32,10 +32,10 @@ FILE *fp;
 
 
 void
-elapsed_time(void)
+elapsed_time(int start_new_turn)
 {
     static clock_t interval;
-    if (!interval) {
+    if (start_new_turn) {
         interval = clock();
     } else {
         interval = clock() - interval;
@@ -173,7 +173,7 @@ main(int argc, char const *argv[])
 #endif
 
         printf("Loading %s into memory...\n", argv[i]);
-        elapsed_time();
+        elapsed_time(1);
         printf("\n%d sequences have been loaded into memory:\n", load_input(fp));
         int k_mer_count = cursor - memory;
         int index_count = 1 << (2 * k);
@@ -183,14 +183,14 @@ main(int argc, char const *argv[])
             k_mer_count, k0, sizeof(new_t) * k_mer_count / MEGABYTE,
             index_count,   sizeof(new_t *) * index_count / MEGABYTE
         );
-        elapsed_time();
+        elapsed_time(0);
 
         for (;;) {
             char buffer[k0 + 2];  // newline and null character
             int k_mer_type = get_line(buffer);
-            elapsed_time();
+            elapsed_time(1);
             printf("%d results found.\n", query(k_mer_type, buffer));
-            elapsed_time();
+            elapsed_time(0);
         }
         fclose(fp);
     }
