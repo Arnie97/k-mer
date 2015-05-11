@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#define MEGABYTE 1048576
 
 #define k 5
 
@@ -24,7 +25,7 @@ elapsed_time(void)
         interval = clock();
     } else {
         interval = clock() - interval;
-        printf("Well done in %.3f seconds.\n\n",
+        printf("\nWell done in %.3f seconds.\n\n",
             (double)interval / CLOCKS_PER_SEC);
         interval = 0;
     }
@@ -146,10 +147,15 @@ main(int argc, char const *argv[])
 
         printf("Loading %s into memory...\n", argv[i]);
         elapsed_time();
-        printf("%d sequences loaded into memory.\n", load_input(fp));
+        printf("\n%d sequences have been loaded into memory:\n", load_input(fp));
         int k_mer_count = cursor - memory;
-        printf("%d %d-mers is stored in %d megabytes.\n",
-            k_mer_count, k, k_mer_count * sizeof(new_t) / 1048576);
+        int index_count = 1 << (2 * k);
+        printf(
+            "%d %d-mers are stored in %d megabytes,\n"
+            "while %d indexes in about %d megabytes.\n",
+            k_mer_count, k, sizeof(new_t) * k_mer_count / MEGABYTE,
+            index_count,  sizeof(new_t *) * index_count / MEGABYTE
+        );
         elapsed_time();
 
         fclose(fp);
